@@ -3,11 +3,9 @@ import os
 
 from django.conf import settings
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
 
-@python_2_unicode_compatible
 class HMACKey(models.Model):
     """
     The default HMACKey model that can auto generate a

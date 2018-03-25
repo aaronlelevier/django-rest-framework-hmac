@@ -28,7 +28,6 @@ def configure_settings():
                 'rest_framework_hmac.hmac_key'
             ),
             SITE_ID=1,
-            TEST_RUNNER='django.test.simple.DjangoTestSuiteRunner',
             TEST_ROOT=join(dirname(__file__), 'tests'),
             MIDDLEWARE_CLASSES=(),
         )

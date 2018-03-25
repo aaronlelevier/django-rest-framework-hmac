@@ -19,9 +19,8 @@ class HMACAuthentication(BaseAuthentication):
 
         return (user, None)
 
-    def get_user(self, request):
-        # TODO: getting AppsNotConfigured error, so put this import here,
-        # there should be a config to not get that error
+    @staticmethod
+    def get_user(request):
         from django.contrib.auth import get_user_model
         UserModel = get_user_model()
 
@@ -30,7 +29,8 @@ class HMACAuthentication(BaseAuthentication):
         except (KeyError, UserModel.DoesNotExist):
             raise AuthenticationFailed()
 
-    def get_signature(self, request):
+    @staticmethod
+    def get_signature(request):
         try:
             signature = request.META['Signature']
         except KeyError:

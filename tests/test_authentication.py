@@ -1,20 +1,17 @@
-import json
 import pytest
-
-from pretend import stub
-
-from django.test import TestCase, override_settings
-from django.conf.urls import include, url
 from django.contrib.auth.models import User
-
+from django.test import TestCase
+from pretend import stub
 from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.test import APIRequestFactory, APITestCase
 from rest_framework.views import APIView
-from rest_framework.exceptions import AuthenticationFailed
+
 from rest_framework_hmac import HMACAuthentication, HMACClient
 
 factory = APIRequestFactory()
+
 
 class BasicView(APIView):
     authentication_classes = (HMACAuthentication,)
@@ -22,10 +19,6 @@ class BasicView(APIView):
     def post(self, request, *args, **kwargs):
         return Response(data=request.data)
 
-
-# urlpatterns = [
-#     url(r'^auth/$', BasicView.as_view()),
-# ]
 
 class HMACAuthenticationUnitTests(TestCase):
 
@@ -80,17 +73,20 @@ class HMACAuthenticationIntegrationTests(APITestCase):
         self.view = BasicView.as_view()
 
     def test_post_200(self):
-        signature = HMACClient(self.user.hmac_key.secret).calc_signature(self.fake_request)
+        signature = HMACClient(
+            self.user.hmac_key.secret).calc_signature(self.fake_request)
 
         request = factory.post(
-            '/', self.post_data, format='json', **{'Key': self.user.hmac_key.key, 'Signature': signature})
+            '/', self.post_data, format='json',
+            **{'Key': self.user.hmac_key.key, 'Signature': signature})
         response = self.view(request)
 
         assert response.status_code == status.HTTP_200_OK
 
     def test_post_400__invalid_signature(self):
         request = factory.post(
-            '/', self.post_data, format='json', **{'Key': self.user.hmac_key.key, 'Signature': b'invalid'})
+            '/', self.post_data, format='json',
+            **{'Key': self.user.hmac_key.key, 'Signature': b'invalid'})
         response = self.view(request)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
