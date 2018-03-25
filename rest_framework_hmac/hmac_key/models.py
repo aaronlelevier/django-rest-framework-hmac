@@ -27,5 +27,12 @@ class HMACKey(models.Model):
     )
     created = models.DateTimeField(_("Created"), auto_now_add=True)
 
+    class Meta:
+        # Only create a DB table for this Model if this app is registered
+        abstract = 'rest_framework_hmac.hmac_key' \
+            not in settings.INSTALLED_APPS
+        verbose_name = _("HMACKey")
+        verbose_name_plural = _("HMACKey")
+
     def __str__(self):
         return self.key
