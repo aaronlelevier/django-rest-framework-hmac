@@ -6,7 +6,7 @@ import json
 from django.test import TestCase
 from pretend import stub
 
-from rest_framework_hmac import HMACClient
+from rest_framework_hmac.client import HMACClient
 
 
 class SignerTests(TestCase):
