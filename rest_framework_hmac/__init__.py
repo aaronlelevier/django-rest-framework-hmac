@@ -1,8 +1,8 @@
-from .auth import HMACAuthentication
-from .signer import HMACSigner
+from .authentication import HMACAuthentication
+from .client import HMACClient
 
 
 __all__ = [
     'HMACAuthentication',
-    'HMACSigner'
+    'HMACClient'
 ]

@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.test import APIRequestFactory, APITestCase
 from rest_framework.views import APIView
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework_hmac import HMACAuthentication, HMACSigner
+from rest_framework_hmac import HMACAuthentication, HMACClient
 
 factory = APIRequestFactory()
 
@@ -80,7 +80,7 @@ class HMACAuthenticationIntegrationTests(APITestCase):
         self.view = BasicView.as_view()
 
     def test_post_200(self):
-        signature, _ = HMACSigner(self.user.hmac_key.secret).calc_signature(self.fake_request)
+        signature = HMACClient(self.user.hmac_key.secret).calc_signature(self.fake_request)
 
         request = factory.post(
             '/', self.post_data, format='json', **{'Key': self.user.hmac_key.key, 'Signature': signature})

@@ -3,7 +3,7 @@ import hmac
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from rest_framework_hmac.signer import HMACSigner
+from rest_framework_hmac.client import HMACClient
 
 
 class HMACAuthentication(BaseAuthentication):
@@ -12,7 +12,7 @@ class HMACAuthentication(BaseAuthentication):
         signature = self.get_signature(request)
         user = self.get_user(request)
 
-        b64, _ = HMACSigner(user.hmac_key.secret).calc_signature(request)
+        b64 = HMACClient(user.hmac_key.secret).calc_signature(request)
 
         if not hmac.compare_digest(b64, signature):
             raise AuthenticationFailed()
