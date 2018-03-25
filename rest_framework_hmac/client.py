@@ -4,14 +4,19 @@ import hmac
 import json
 
 
-class HMACClient(object):
-
-    def __init__(self, secret_key):
+class BaseHMACClient(object):
+    """
+    Base class for HMAC Client cryptographic signing. Use
+    this class if the programmer wants to implement thier
+    own lookup for the HMAC `secret` cryptographic key
+    """
+    def __init__(self, user):
         """
         Args:
-            secret_key (byte str): cryptographic key
+            user (User instance):
+                that will be used to obtain the cryptographic key
         """
-        self.secret_key = secret_key
+        self.secret = self.get_user_secret(user)
 
     def calc_signature(self, request):
         """
@@ -19,7 +24,20 @@ class HMACClient(object):
         and the request payload
         """
         string_to_sign = json.dumps(request.data, separators=(',', ':'))
-        byte_key = bytes.fromhex(self.secret_key)
+        byte_key = bytes.fromhex(self.secret)
         lhmac = hmac.new(byte_key, digestmod=hashlib.sha256)
         lhmac.update(string_to_sign.encode('utf8'))
         return base64.b64encode(lhmac.digest())
+
+    def get_user_secret(self, user):
+        raise NotImplementedError('get_user_secret')
+
+
+class HMACClient(BaseHMACClient):
+    """
+    Concrete class for HMAC Client cryptographic signing. Use
+    this class if the programmer has registered the HMACKey
+    Model to be created via a signal
+    """
+    def get_user_secret(self, user):
+        return user.hmac_key.secret

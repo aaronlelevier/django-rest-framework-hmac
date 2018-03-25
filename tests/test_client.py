@@ -3,26 +3,37 @@ import hashlib
 import hmac
 import json
 
+import pytest
 from django.test import TestCase
 from pretend import stub
 
-from rest_framework_hmac.client import HMACClient
+from rest_framework_hmac.client import BaseHMACClient, HMACClient
 
 
-class SignerTests(TestCase):
+class BaseHMACClientTests(TestCase):
 
-    def setUp(self):
-        self.api_key = '387632cfa3d18cd19bdfe72b61ac395dfcdc87c9'
+    def test_get_user_secret(self):
+        user = stub()
+
+        with pytest.raises(NotImplementedError) as excinfo:
+            BaseHMACClient(user)
+        assert 'get_user_secret' in str(excinfo.value)
+
+
+class HMACClientTests(TestCase):
 
     def test_calc_signature(self):
-        hmac_client = HMACClient(self.api_key)
+        secret = '387632cfa3d18cd19bdfe72b61ac395dfcdc87c9'
+        hmac_key = stub(secret=secret)
+        user = stub(hmac_key=hmac_key)
+        hmac_client = HMACClient(user)
         data = {'foo': 'bar'}
         request = stub(data=data)
 
         ret_b64 = hmac_client.calc_signature(request)
 
         string_to_sign = json.dumps(request.data, separators=(',', ':'))
-        byte_key = bytes.fromhex(self.api_key)
+        byte_key = bytes.fromhex(secret)
         lhmac = hmac.new(byte_key, digestmod=hashlib.sha256)
         lhmac.update(string_to_sign.encode('utf8'))
         b64 = base64.b64encode(lhmac.digest())

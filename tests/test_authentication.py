@@ -74,8 +74,7 @@ class HMACAuthenticationIntegrationTests(APITestCase):
         self.view = BasicView.as_view()
 
     def test_post_200(self):
-        signature = HMACClient(
-            self.user.hmac_key.secret).calc_signature(self.fake_request)
+        signature = HMACClient(self.user).calc_signature(self.fake_request)
 
         request = factory.post(
             '/', self.post_data, format='json',
