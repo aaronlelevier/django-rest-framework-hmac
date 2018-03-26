@@ -10,8 +10,7 @@ from rest_framework.views import APIView
 
 from rest_framework_hmac.authentication import HMACAuthentication
 from rest_framework_hmac.client import HMACClient
-
-from . import factory
+from tests import factory
 
 request_factory = APIRequestFactory()
 

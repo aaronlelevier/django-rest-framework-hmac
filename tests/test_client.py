@@ -8,8 +8,7 @@ from django.test import TestCase
 from pretend import stub
 
 from rest_framework_hmac.client import BaseHMACClient, HMACClient
-
-from . import factory
+from tests import factory
 
 ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
 
