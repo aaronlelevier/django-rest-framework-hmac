@@ -31,7 +31,7 @@ if sys.argv[-1] == 'publish':
     print("  git push --tags")
     shutil.rmtree('dist')
     shutil.rmtree('build')
-    shutil.rmtree('django-rest-framework-hmac.egg-info')
+    shutil.rmtree('django_rest_framework_hmac.egg-info')
     sys.exit()
 
 
