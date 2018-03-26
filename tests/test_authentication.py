@@ -11,14 +11,27 @@ from rest_framework.views import APIView
 from rest_framework_hmac.authentication import HMACAuthentication
 from rest_framework_hmac.client import HMACClient
 
-factory = APIRequestFactory()
+from . import factory
+
+request_factory = APIRequestFactory()
+
+ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
 
 
 class BasicView(APIView):
     authentication_classes = (HMACAuthentication,)
 
+    def get(self, request, *args, **kwargs):
+        return Response(data={'foo': 'bar'})
+
     def post(self, request, *args, **kwargs):
         return Response(data=request.data)
+
+    def put(self, request, *args, **kwargs):
+        return Response(data=request.data)
+
+    def delete(self, request, *args, **kwargs):
+        return Response(data={'message': 'ok'})
 
 
 class HMACAuthenticationUnitTests(TestCase):
@@ -69,24 +82,57 @@ class HMACAuthenticationIntegrationTests(APITestCase):
 
     def setUp(self):
         self.post_data = {'foo': 'bar'}
-        self.fake_request = stub(data=self.post_data)
+        self.fake_post_request = factory.post_request(self.post_data)
         self.user = User.objects.create_user('bob')
         self.view = BasicView.as_view()
+        self.extras = {'Key': self.user.hmac_key.key, 'Timestamp': factory.TIME}
 
     def test_post_200(self):
-        signature = HMACClient(self.user).calc_signature(self.fake_request)
+        signature = HMACClient(
+            self.user).calc_signature(self.fake_post_request)
+        self.extras['Signature'] = signature
 
-        request = factory.post(
-            '/', self.post_data, format='json',
-            **{'Key': self.user.hmac_key.key, 'Signature': signature})
+        request = request_factory.post(
+            '/', self.post_data, format='json', **self.extras)
         response = self.view(request)
 
         assert response.status_code == status.HTTP_200_OK
 
     def test_post_400__invalid_signature(self):
-        request = factory.post(
-            '/', self.post_data, format='json',
-            **{'Key': self.user.hmac_key.key, 'Signature': b'invalid'})
+        self.extras['Signature'] = b'invalid'
+
+        request = request_factory.post(
+            '/', self.post_data, format='json', **self.extras)
         response = self.view(request)
 
         assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    def test_get_200(self):
+        signature = HMACClient(self.user).calc_signature(factory.get_request())
+        self.extras['Signature'] = signature
+
+        request = request_factory.get('/', format='json', **self.extras)
+        response = self.view(request)
+
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_put_200(self):
+        data = {'biz': 'baz'}
+        signature = HMACClient(self.user).calc_signature(
+            factory.put_request(data))
+        self.extras['Signature'] = signature
+
+        request = request_factory.put('/', data, format='json', **self.extras)
+        response = self.view(request)
+
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_delete_200(self):
+        signature = HMACClient(self.user).calc_signature(
+            factory.delete_request())
+        self.extras['Signature'] = signature
+
+        request = request_factory.delete('/', format='json', **self.extras)
+        response = self.view(request)
+
+        assert response.status_code == status.HTTP_200_OK
