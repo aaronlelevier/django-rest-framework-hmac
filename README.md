@@ -12,6 +12,14 @@ HMAC is used by the [botocore](https://github.com/boto/botocore) Python library 
 - Django 2.0
 - Django REST Framework 3.7
 
+# Installation
+
+Install using `pip`...
+
+```
+$ pip install django-rest-framework-hmac
+```
+
 # Documentation
 
 ## How to use
