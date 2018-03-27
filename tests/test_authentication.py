@@ -9,7 +9,7 @@ from rest_framework.test import APIRequestFactory, APITestCase
 from rest_framework.views import APIView
 
 from rest_framework_hmac.authentication import HMACAuthentication
-from rest_framework_hmac.client import HMACClient
+from rest_framework_hmac.client import HMACAuthenticator
 from tests import factory
 
 request_factory = APIRequestFactory()
@@ -87,7 +87,7 @@ class HMACAuthenticationIntegrationTests(APITestCase):
         self.extras = {'Key': self.user.hmac_key.key, 'Timestamp': factory.TIME}
 
     def test_post_200(self):
-        signature = HMACClient(
+        signature = HMACAuthenticator(
             self.user).calc_signature(self.fake_post_request)
         self.extras['Signature'] = signature
 
@@ -107,7 +107,7 @@ class HMACAuthenticationIntegrationTests(APITestCase):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_200(self):
-        signature = HMACClient(self.user).calc_signature(factory.get_request())
+        signature = HMACAuthenticator(self.user).calc_signature(factory.get_request())
         self.extras['Signature'] = signature
 
         request = request_factory.get('/', format='json', **self.extras)
@@ -117,7 +117,7 @@ class HMACAuthenticationIntegrationTests(APITestCase):
 
     def test_put_200(self):
         data = {'biz': 'baz'}
-        signature = HMACClient(self.user).calc_signature(
+        signature = HMACAuthenticator(self.user).calc_signature(
             factory.put_request(data))
         self.extras['Signature'] = signature
 
@@ -127,7 +127,7 @@ class HMACAuthenticationIntegrationTests(APITestCase):
         assert response.status_code == status.HTTP_200_OK
 
     def test_delete_200(self):
-        signature = HMACClient(self.user).calc_signature(
+        signature = HMACAuthenticator(self.user).calc_signature(
             factory.delete_request())
         self.extras['Signature'] = signature
 
