@@ -95,6 +95,31 @@ headers = {
 client.post('/notes/', post_data, format='json', **headers)
 ```
 
+# Example project
+
+To run the example project, run the following commands
+
+```
+cd rest_framework_hmac/example_project/
+
+# create virtualenv (python3 must be installed)
+python3 -m venv venv
+
+# activate virtualenv
+source venv/bin/activate
+
+# install requirements
+pip install -r requirements.txt
+
+cd example
+
+# run tests
+./manage.py test
+
+# or run Django local server
+./manage.py runserver
+```
+
 # License
 
  BSD 2-Clause
