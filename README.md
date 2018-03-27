@@ -94,3 +94,7 @@ headers = {
 }
 client.post('/notes/', post_data, format='json', **headers)
 ```
+
+# License
+
+ BSD 2-Clause
