@@ -1,7 +1,7 @@
 import base64
 import hashlib
 import hmac
-import time
+from collections import OrderedDict
 
 import pytest
 from django.test import TestCase
@@ -9,10 +9,6 @@ from pretend import stub
 
 from rest_framework_hmac.client import BaseHMACClient, HMACClient
 from tests import factory
-
-ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
-
-TIME = time.strftime(ISO8601, time.gmtime())
 
 
 class BaseHMACClientTests(TestCase):
@@ -79,3 +75,24 @@ class HMACClientTests(TestCase):
         b64 = self._get_b64_signature(hmac_client, request, secret='abc123')
 
         assert ret_b64 != b64
+
+    def test_gen_signature(self):
+        # calc_signature b64
+        secret = '387632cfa3d18cd19bdfe72b61ac395dfcdc87c9'
+        hmac_key = stub(secret=secret)
+        user = stub(hmac_key=hmac_key)
+        hmac_client = HMACClient(user)
+        data = {'foo': 'bar'}
+        request = factory.post_request(data)
+        calc_signature_b64 = hmac_client.calc_signature(request)
+
+        # gen_signature b64
+        headers = OrderedDict([
+            ('method', 'POST'),
+            ('hostname', '127.0.0.1'),
+            ('path', '/'),
+            ('timestamp', factory.TIME)
+        ])
+        gen_signature_b64 = hmac_client.gen_signature(headers, data)
+
+        assert calc_signature_b64 == gen_signature_b64

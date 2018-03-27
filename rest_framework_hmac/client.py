@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import json
+from collections import OrderedDict
 
 
 class BaseHMACClient(object):
@@ -24,10 +25,26 @@ class BaseHMACClient(object):
         and the request payload
         """
         string_to_sign = self.string_to_sign(request)
+        return self._calc_signature_from_str(string_to_sign)
+
+    def _calc_signature_from_str(self, s):
         byte_key = bytes.fromhex(self.secret)
         lhmac = hmac.new(byte_key, digestmod=hashlib.sha256)
-        lhmac.update(string_to_sign.encode('utf8'))
+        lhmac.update(s.encode('utf8'))
         return base64.b64encode(lhmac.digest())
+
+    def gen_signature(self, headers, data):
+        string_to_sign = self.gen_string_to_sign(headers, data)
+        return self._calc_signature_from_str(string_to_sign)
+
+    def gen_string_to_sign(self, headers, data):
+        s = '{method}\n{hostname}\n{path}\n{timestamp}\n'.format(**headers)
+
+        # Don't add in case of a 'GET' request
+        if data:
+            s += json.dumps(data, separators=(',', ':'))
+
+        return s
 
     def string_to_sign(self, request):
         """
@@ -35,10 +52,13 @@ class BaseHMACClient(object):
         and optionally the payload, if it's not a GET, to determine
         the string used for signing
         """
-        s = '%s\n%s\n%s\n%s\n' % (request.method,
-                                  request.META['REMOTE_ADDR'],
-                                  request.META['PATH_INFO'],
-                                  request.META['Timestamp'])
+        headers = OrderedDict([
+            ('method', request.method),
+            ('hostname', request.META['REMOTE_ADDR']),
+            ('path', request.META['PATH_INFO']),
+            ('timestamp', request.META['Timestamp'])
+        ])
+        s = '{method}\n{hostname}\n{path}\n{timestamp}\n'.format(**headers)
 
         # Don't add in case of a 'GET' request
         if getattr(request, 'data', None):
@@ -52,7 +72,7 @@ class BaseHMACClient(object):
 
 class HMACClient(BaseHMACClient):
     """
-    Concrete class for HMAC Client cryptographic signing. Use
+    Concrete class for HMACClient cryptographic signing. Use
     this class if the programmer has registered the HMACKey
     Model to be created via a signal
     """
