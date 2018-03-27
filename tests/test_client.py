@@ -1,7 +1,6 @@
 import base64
 import hashlib
 import hmac
-from collections import OrderedDict
 
 from django.test import TestCase
 from pretend import stub
@@ -89,12 +88,7 @@ class HMACSignerTests(TestCase):
         request = factory.post_request(data)
         authenticator_b64 = authenticator.calc_signature(request)
 
-        headers = OrderedDict([
-            ('method', 'POST'),
-            ('hostname', '127.0.0.1'),
-            ('path', '/'),
-            ('timestamp', factory.TIME)
-        ])
-        signer_b64 = HMACSigner(user).calc_signature(headers, data)
+        signer_b64 = HMACSigner(user).calc_signature(
+            factory.post_headers, data)
 
         assert signer_b64 == authenticator_b64

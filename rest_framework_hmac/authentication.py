@@ -9,6 +9,7 @@ from rest_framework_hmac.client import HMACAuthenticator
 class HMACAuthentication(BaseAuthentication):
 
     def authenticate(self, request):
+
         signature = self.get_signature(request)
         user = self.get_user(request)
 

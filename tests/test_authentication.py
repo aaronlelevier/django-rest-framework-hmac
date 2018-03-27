@@ -9,7 +9,7 @@ from rest_framework.test import APIRequestFactory, APITestCase
 from rest_framework.views import APIView
 
 from rest_framework_hmac.authentication import HMACAuthentication
-from rest_framework_hmac.client import HMACAuthenticator
+from rest_framework_hmac.client import HMACSigner
 from tests import factory
 
 request_factory = APIRequestFactory()
@@ -81,15 +81,13 @@ class HMACAuthenticationIntegrationTests(APITestCase):
 
     def setUp(self):
         self.post_data = {'foo': 'bar'}
-        self.fake_post_request = factory.post_request(self.post_data)
         self.user = User.objects.create_user('bob')
         self.view = BasicView.as_view()
         self.extras = {'Key': self.user.hmac_key.key, 'Timestamp': factory.TIME}
 
     def test_post_200(self):
-        signature = HMACAuthenticator(
-            self.user).calc_signature(self.fake_post_request)
-        self.extras['Signature'] = signature
+        self.extras['Signature'] = HMACSigner(self.user).calc_signature(
+            factory.post_headers, self.post_data)
 
         request = request_factory.post(
             '/', self.post_data, format='json', **self.extras)
@@ -107,8 +105,8 @@ class HMACAuthenticationIntegrationTests(APITestCase):
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
     def test_get_200(self):
-        signature = HMACAuthenticator(self.user).calc_signature(factory.get_request())
-        self.extras['Signature'] = signature
+        self.extras['Signature'] = HMACSigner(self.user).calc_signature(
+            factory.get_headers)
 
         request = request_factory.get('/', format='json', **self.extras)
         response = self.view(request)
@@ -117,9 +115,8 @@ class HMACAuthenticationIntegrationTests(APITestCase):
 
     def test_put_200(self):
         data = {'biz': 'baz'}
-        signature = HMACAuthenticator(self.user).calc_signature(
-            factory.put_request(data))
-        self.extras['Signature'] = signature
+        self.extras['Signature'] = HMACSigner(self.user).calc_signature(
+            factory.put_headers, data)
 
         request = request_factory.put('/', data, format='json', **self.extras)
         response = self.view(request)
@@ -127,9 +124,8 @@ class HMACAuthenticationIntegrationTests(APITestCase):
         assert response.status_code == status.HTTP_200_OK
 
     def test_delete_200(self):
-        signature = HMACAuthenticator(self.user).calc_signature(
-            factory.delete_request())
-        self.extras['Signature'] = signature
+        self.extras['Signature'] = HMACSigner(self.user).calc_signature(
+            factory.delete_headers)
 
         request = request_factory.delete('/', format='json', **self.extras)
         response = self.view(request)

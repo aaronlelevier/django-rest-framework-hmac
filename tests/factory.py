@@ -8,16 +8,8 @@ TIME = time.strftime(ISO8601, time.gmtime())
 
 
 def post_request(data):
-    return _request_with_data(data, method='POST')
-
-
-def put_request(data):
-    return _request_with_data(data, method='PUT')
-
-
-def _request_with_data(data, method):
     return stub(
-        method=method,
+        method='POST',
         META={
             'REMOTE_ADDR': '127.0.0.1',
             'PATH_INFO': '/',
@@ -27,18 +19,28 @@ def _request_with_data(data, method):
 
 
 def get_request():
-    return _request_without_data(method='GET')
-
-
-def delete_request():
-    return _request_without_data(method='DELETE')
-
-
-def _request_without_data(method):
     return stub(
-        method=method,
+        method='GET',
         META={
             'REMOTE_ADDR': '127.0.0.1',
             'PATH_INFO': '/',
             'Timestamp': TIME
         })
+
+
+def _headers(method):
+    return {
+        'method': method,
+        'hostname': '127.0.0.1',
+        'path': '/',
+        'timestamp': TIME
+    }
+
+
+get_headers = _headers('GET')
+
+post_headers = _headers('POST')
+
+put_headers = _headers('PUT')
+
+delete_headers = _headers('DELETE')

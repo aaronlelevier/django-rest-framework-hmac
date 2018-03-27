@@ -2,7 +2,6 @@ import base64
 import hashlib
 import hmac
 import json
-from collections import OrderedDict
 
 
 class BaseHMAC(object):
@@ -20,6 +19,12 @@ class BaseHMAC(object):
         self.secret = self.get_user_secret(user)
 
     def get_user_secret(self, user):
+        """
+        Retrieves the HMAC secret key to use for signing
+
+        Note: can be overriden if the programmer wants to implement their
+        own HMAC secret key retrieval based on the `User`
+        """
         return user.hmac_key.secret
 
     def _calc_signature_from_str(self, s):
@@ -37,24 +42,21 @@ class HMACAuthenticator(BaseHMAC):
     """
     def calc_signature(self, request):
         """
-        Calculates the HMAC signature based upon the cryptographic key
-        and the request payload
+        Calculates the HMAC Signature based upon the headers and data
         """
         string_to_sign = self.string_to_sign(request)
         return self._calc_signature_from_str(string_to_sign)
 
     def string_to_sign(self, request):
         """
-        Uses the request.path, method, timestamp of the request,
-        and optionally the payload, if it's not a GET, to determine
-        the string used for signing
+        Calcuates the string to sign using the HMAC secret
         """
-        headers = OrderedDict([
-            ('method', request.method),
-            ('hostname', request.META['REMOTE_ADDR']),
-            ('path', request.META['PATH_INFO']),
-            ('timestamp', request.META['Timestamp'])
-        ])
+        headers = {
+            'method': request.method,
+            'hostname': request.META['REMOTE_ADDR'],
+            'path': request.META['PATH_INFO'],
+            'timestamp': request.META['Timestamp']
+        }
         s = '{method}\n{hostname}\n{path}\n{timestamp}\n'.format(**headers)
 
         # Don't add in case of a 'GET' request
@@ -66,16 +68,23 @@ class HMACAuthenticator(BaseHMAC):
 
 class HMACSigner(BaseHMAC):
     """
-    Conveince class for signing HMAC request Signatures using
-    and OrderedDict instead of a request, which is what the
+    Conveince class for signing HMAC request Signatures
+    using a `dict` instead of a `request`, which is what
     `HMACAuthenticator` relies on for calculating the HMAC
     Signatures
     """
-    def calc_signature(self, headers, data):
+    def calc_signature(self, headers, data=None):
+        """
+        Calculates the HMAC Signature based upon the headers and data
+        """
         string_to_sign = self.string_to_sign(headers, data)
         return self._calc_signature_from_str(string_to_sign)
 
-    def string_to_sign(self, headers, data):
+    def string_to_sign(self, headers, data=None):
+        """
+        Calcuates the string to sign using the HMAC secret
+
+        """
         s = '{method}\n{hostname}\n{path}\n{timestamp}\n'.format(**headers)
 
         # Don't add in case of a 'GET' request
