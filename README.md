@@ -1,3 +1,4 @@
+
 # Django REST Framework HMAC Authentication
 
 This library implements the [HMAC](https://en.wikipedia.org/wiki/HMAC) Authentication protocol for the [django-rest-framework](http://www.django-rest-framework.org/).  
@@ -64,18 +65,18 @@ The `Timestamp` can be any string timestamp. In the example the `HMACSigner` the
 
 ```python
 import time
+
 from rest_framework.test import APIClient
 from rest_framework_hmac.client import HMACSigner
-from rest_framework_hmac.tests.factory import ISO8601
-from django.auth.contrib.models import User
+from django.contrib.auth.models import User
 
 # generate the signature using the headers and request
 # payload if present
+ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
+TIME = time.strftime(ISO8601, time.gmtime())
 user = User.objects.create_user('bob')
 
-TIME = time.strftime(ISO8601, time.gmtime())
-
-hmac_signer = HMASigner(user)
+hmac_signer = HMACSigner(user)
 headers = {
     'method': POST,
     'hostname': '127.0.0.1',
