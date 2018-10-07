@@ -10,7 +10,7 @@ HMAC is used by the [botocore](https://github.com/boto/botocore) Python library 
 # Requirements
 
 - Python 3.6
-- Django 2.0
+- Django 2.0+
 - Django REST Framework 3.7
 
 # Installation
