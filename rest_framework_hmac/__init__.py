@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 __title__ = 'django-rest-framework-hmac'
-__version__ = '0.3.0'
+__version__ = '0.3.1'
 __author__ = 'Aaron Lelevier'
 __license__ = 'BSD 2-Clause'
 __copyright__ = 'Copyright 2018 Aaron Lelevier'
